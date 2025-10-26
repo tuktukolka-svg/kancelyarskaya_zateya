@@ -74,8 +74,6 @@ function searchAcrossAll() {
     `;
     resultsContainer.appendChild(div);
 
-    // Можно добавить обработчик клика по кнопке, чтобы при добавлении товара в корзину
-    // обновлять список просмотренных товаров
     div.querySelector('.tovar_btn').addEventListener('click', () => {
       addViewedProduct(product.id);
     });
@@ -112,9 +110,6 @@ document.addEventListener('click', (e) => {
 
 
 
-
-
-
 // Обработка кликов по вкладкам или навигации
 document.querySelectorAll('.page-link, .header-basket, .header-catalog').forEach(link => {
   link.addEventListener('click', function() {
@@ -140,7 +135,6 @@ document.querySelectorAll('.page-link, .header-basket, .header-catalog').forEach
 
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Получаем все страницы
   const pages = {
     page1: document.getElementById('page1'),
     page2: document.getElementById('page2'),
@@ -245,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showPage(section);
       updateButtonVisibility(section);
       // при просмотре страниц через верхнюю навигацию — скрываем поиск и корзину
-      if (section !== 'section-home') { // предполагается, что главная — page1
+      if (section !== 'section-home') { 
         hideSearchAndCart();
       }
     });
@@ -269,6 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showPage(section);
       // при просмотре страниц через нижнюю навигацию — показываем поиск и корзину
       showSearchAndCart();
+      updateFooterMargin();
     });
   });
 
@@ -280,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         showSearchAndCart();
       }
-      const currentSection = 'section1'; // или логика определения
+      const currentSection = 'section1';
       showPage(currentSection);
       updateButtonVisibility(currentSection);
     });
@@ -339,7 +334,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('page11').style.display = 'block';
 }
 
-    // Объявление функции по требованию
     window.searchAcrossAll = searchAcrossAll;
 
   });
@@ -391,7 +385,9 @@ function initialize() {
   }
   updateButtons();
   showCart();
+  updateFooterMargin()
 }
+
 
 // Обновление кнопок "В корзине"
 function updateButtons() {
@@ -406,11 +402,13 @@ function updateButtons() {
       btn.classList.remove('added');
     }
   });
+  updateFooterMargin();
 }
 
 // Обработчик для кнопок "В корзину"
-document.querySelectorAll('.tovar_btn').forEach(btn => {
-  btn.addEventListener('click', () => {
+document.getElementById('resultsContainer').addEventListener('click', (event) => {
+  if (event.target.classList.contains('tovar_btn')) {
+    const btn = event.target;
     const id = btn.dataset.id;
     const name = btn.dataset.name;
     const price = parseFloat(btn.dataset.price);
@@ -421,10 +419,9 @@ document.querySelectorAll('.tovar_btn').forEach(btn => {
     } else {
       cartItems[id] = { name, price, photo, count: 1 };
     }
-
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
-    updateButtons();
-  });
+  }
+  updateFooterMargin();
 });
 
 // Обработчик для кнопки "Показать корзину"
@@ -434,14 +431,13 @@ if (cartBtn) {
     showCart();
     document.getElementById('page10').style.display = 'block';
   });
+  updateFooterMargin()
 }
 
 function showCart() {
   const container = document.getElementById('cart-container');
   if (!container) return;
 
-  // Убедитесь, что контейнер имеет position: relative; в CSS
-  // container.style.position = 'relative'; — убираем из JS
 
   container.innerHTML = '';
 
@@ -486,18 +482,25 @@ function showCart() {
       }
       localStorage.setItem('cartItems', JSON.stringify(cartItems));
       showCart();
+      updateButtons();
+      updateFooterMargin();
     });
 
     div.querySelector('.increase').addEventListener('click', () => {
       cartItems[key].count++;
       localStorage.setItem('cartItems', JSON.stringify(cartItems));
       showCart();
+      updateButtons();
+      updateFooterMargin();
     });
 
     div.querySelector('.delete-btn').addEventListener('click', () => {
       delete cartItems[key];
+      updateFooterMargin();
       localStorage.setItem('cartItems', JSON.stringify(cartItems));
       showCart();
+      updateButtons();
+      
     });
 
     container.appendChild(div);
@@ -547,10 +550,13 @@ function showCart() {
   `;
 
   container.appendChild(adDiv);
+  checkOverlap();
+  updateFooterMargin();
 }
 // Вызов initialize при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
   initialize();
+  updateFooterMargin();
 });
 
 
@@ -559,6 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('load', initialize);
 window.addEventListener('hashchange', () => {
   initialize();
+  updateFooterMargin()
 });
 
 
@@ -569,3 +576,16 @@ document.getElementById('scrollTopBtn').addEventListener('click', function() {
     behavior: 'smooth'
   });
 });
+
+/* футер чтоб не налезал*/
+function updateFooterMargin() {
+  const footer = document.getElementById('footer');
+  const itemCount = Object.keys(cartItems).length;
+
+  if (itemCount === 1) {
+    footer.style.marginTop = '15%'; // или любой другой стиль
+  } else {
+    footer.style.marginTop = ''; // сбросить стиль, если нужно
+  }
+};
+window.addEventListener('load', checkOverlap);
